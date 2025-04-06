@@ -1,60 +1,102 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import "./Navbar.css";
 
-function Navbar(props) {
-  const handleNavigate = (page) => {
-    props.onNavigate(page);
+const Navbar = ({ connectWallet, account }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+
+  // Handle scrolling effect for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const toggleMenu = () => setIsOpen(!isOpen);
+
+  // Shorten the address (e.g., 0x1234...abcd)
+  const shortenAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const handleConnect = () => {
-    props.onConnectWallet();
-  };
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const closeMenu = () => {
+      if (isOpen) setIsOpen(false);
+    };
+    
+    document.body.addEventListener('click', closeMenu);
+    return () => document.body.removeEventListener('click', closeMenu);
+  }, [isOpen]);
 
-  return React.createElement(
-    'nav',
-    { className: 'bg-gray-800 text-white p-4 flex justify-between items-center' },
-    React.createElement(
-      'div',
-      { className: 'space-x-4' },
-      React.createElement(
-        'button',
-        {
-          className: 'bg-blue-600 px-4 py-2 rounded hover:bg-blue-700',
-          onClick: () => handleNavigate('game')
-        },
-        'Game'
-      ),
-      React.createElement(
-        'button',
-        {
-          className: 'bg-green-600 px-4 py-2 rounded hover:bg-green-700',
-          onClick: () => handleNavigate('store')
-        },
-        'Store'
-      ),
-      React.createElement(
-        'button',
-        {
-          className: 'bg-purple-600 px-4 py-2 rounded hover:bg-purple-700',
-          onClick: () => handleNavigate('profile')
-        },
-        'Profile'
-      )
-    ),
-    React.createElement(
-      'div',
-      {},
-      React.createElement(
-        'button',
-        {
-          className: 'bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600',
-          onClick: handleConnect
-        },
-        props.walletAddress
-          ? `${props.walletAddress.substring(0, 6)}...${props.walletAddress.slice(-4)}`
-          : 'Connect Wallet'
-      )
-    )
+  return (
+    <nav className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}>
+      <div className="nav-container">
+        <Link to="/" className="nav-logo">
+          <span className="logo-emoji">🐤</span> FlappyChain
+        </Link>
+        
+        <div className={`nav-links ${isOpen ? "open" : ""}`}>
+          <Link 
+            to="/" 
+            className={location.pathname === "/" ? "active" : ""}
+            onClick={() => setIsOpen(false)}
+          >
+            Game
+          </Link>
+          <Link 
+            to="/profile" 
+            className={location.pathname === "/profile" ? "active" : ""}
+            onClick={() => setIsOpen(false)}
+          >
+            Profile
+          </Link>
+          <Link 
+            to="/store" 
+            className={location.pathname === "/store" ? "active" : ""}
+            onClick={() => setIsOpen(false)}
+          >
+            Store
+          </Link>
+        </div>
+        
+        <div className="nav-right">
+          {account ? (
+            <div className="wallet-connected">
+              <div className="wallet-indicator"></div>
+              <div className="wallet-address">{shortenAddress(account)}</div>
+            </div>
+          ) : (
+            <button onClick={connectWallet} className="connect-btn">
+              Connect Wallet
+            </button>
+          )}
+          
+          <div 
+            className="nav-toggle" 
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMenu();
+            }}
+          >
+            {isOpen ? "✕" : "☰"}
+          </div>
+        </div>
+      </div>
+    </nav>
   );
-}
+};
 
 export default Navbar;

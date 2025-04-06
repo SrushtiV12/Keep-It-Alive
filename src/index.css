@@ -7,7 +7,6 @@
 body {
   margin-top: 0px; 
 }
-
 .background {
 	height: 100vh;
 	width: 100vw;
@@ -23,7 +22,7 @@ body {
 	position: fixed;
 	top: 40vh;
 	left: 30vw;
-	z-index: 100;
+	z-index: 9;
 }
 .pipe_sprite {
 	position: fixed;
@@ -59,7 +58,7 @@ body {
 	color: white;
 	-webkit-text-stroke-width: 2px;
     -webkit-text-stroke-color: black;
-	top: 0;
+	top: 50px;
 	left: 0;
 	margin: 10px;
 	font-family: Arial, Helvetica, sans-serif;
@@ -129,16 +128,226 @@ body {
   font-weight: bold;
 }
 
+/* Game Over Dialog - Modern Styling */
+.game-over-dialog {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+	animation: fadeIn 0.3s ease-out;
+  }
+  
+  .game-over-content {
+	background: linear-gradient(135deg, #2c3e50, #4ca1af);
+	padding: 2.5rem 3rem;
+	border-radius: 15px;
+	text-align: center;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+	max-width: 90%;
+	width: 400px;
+	color: white;
+	border: 2px solid rgba(255, 255, 255, 0.1);
+	transform: scale(0.95);
+	animation: scaleUp 0.3s ease-out forwards;
+  }
+  
+  .game-over-title {
+	font-size: 2.5rem;
+	margin-bottom: 1.5rem;
+	font-weight: bold;
+	color: #f1c40f;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .game-over-text {
+	font-size: 1.2rem;
+	margin: 1rem 0;
+	line-height: 1.6;
+  }
+  
+  .game-over-score {
+	font-size: 1.5rem;
+	color: #2ecc71;
+	font-weight: bold;
+  }
+  
+  .game-over-highscore {
+	font-size: 1.5rem;
+	color: #e74c3c;
+	font-weight: bold;
+  }
+  
+  .game-over-instruction {
+	margin-top: 2rem;
+	font-size: 1.1rem;
+	color: #ecf0f1;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+  }
+  
+  @keyframes scaleUp {
+	to { transform: scale(1); }
+  }
+  
+  /* Pulse animation for emphasis */
+  @keyframes pulse {
+	0% { transform: scale(1); }
+	50% { transform: scale(1.05); }
+	100% { transform: scale(1); }
+  }
+  
+  .highlight {
+	animation: pulse 1.5s infinite;
+  }
+
 /* Animations */
-@keyframes fadeIn {
+/* @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 @keyframes scaleUp {
   to { transform: scale(1); }
-}
+} */
 body {
   background-color: #121212;
   font-family: sans-serif;
 }
+
+/* Add these styles to your index.css file */
+
+.start-screen {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.7);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+  }
+  
+  .start-content {
+	background: linear-gradient(135deg, #3498db, #8e44ad);
+	padding: 2.5rem;
+	border-radius: 20px;
+	text-align: center;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+	border: 3px solid rgba(255, 255, 255, 0.2);
+	max-width: 90%;
+	width: 500px;
+	color: white;
+	animation: fadeIn 0.5s ease-out;
+  }
+  
+  .game-title {
+	font-size: 3.5rem;
+	font-weight: bold;
+	color: #f1c40f;
+	text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+	margin-bottom: 1.5rem;
+	letter-spacing: 1px;
+  }
+  
+  .bird-container {
+	margin: 1rem 0 2rem;
+	animation: float 2s ease-in-out infinite;
+  }
+  
+  .start-bird {
+	height: 100px;
+	filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+  }
+  
+  .instructions {
+	font-size: 1.3rem;
+	margin-bottom: 2rem;
+	line-height: 1.8;
+  }
+  
+  .key-highlight, .arrow-key, .space-key {
+	display: inline-block;
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 5px;
+	padding: 0.2rem 0.8rem;
+	font-weight: bold;
+	margin: 0 0.2rem;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .arrow-key {
+	color: #e74c3c;
+	font-size: 1.5rem;
+	padding: 0.1rem 0.8rem;
+  }
+  
+  .space-key {
+	padding: 0.2rem 1rem;
+	background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .control-instruction {
+	margin-top: 0.8rem;
+	font-size: 1.2rem;
+  }
+  
+  .start-button {
+	background: linear-gradient(to right, #f1c40f, #e67e22);
+	border: none;
+	padding: 1rem 2.5rem;
+	font-size: 1.4rem;
+	font-weight: bold;
+	color: white;
+	border-radius: 50px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+	letter-spacing: 1px;
+  }
+  
+  .start-button:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+	background: linear-gradient(to right, #e67e22, #f1c40f);
+  }
+  
+  .start-button:active {
+	transform: translateY(1px);
+  }
+  
+  @keyframes float {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-10px); }
+  }
+  
+  @media only screen and (max-width: 768px) {
+	.game-title {
+	  font-size: 2.5rem;
+	}
+	
+	.start-content {
+	  width: 90%;
+	  padding: 2rem;
+	}
+	
+	.instructions {
+	  font-size: 1.1rem;
+	}
+	
+	.start-button {
+	  padding: 0.8rem 2rem;
+	  font-size: 1.2rem;
+	}
+  }

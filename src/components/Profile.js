@@ -1,41 +1,38 @@
+// Profile.js
 import React from "react";
 import "./Profile.css";
 
-const Profile = ({ account, highScore, skins, tokenBalance }) => {
-  // Shorten wallet address like 0x1234...abcd
-  const shortenAddress = (address) => {
-    if (!address) return "";
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
+export default function Profile({ account, highScore, tokens, ownedSkins }) {
   return (
     <div className="profile-container">
-      <h2 className="profile-title">👤 Your Profile</h2>
+      {/* <div className="profile-header">
+        <h1>👤 Your Profile</h1>
+        <p>Check your stats and wallet info</p>
+      </div> */}
 
-      <div className="profile-card">
-        <div className="profile-item">
-          <h3>🏆 High Score</h3>
-          <p>{highScore ?? 0}</p>
+      <div className="profile-cards">
+        <div className="profile-card">
+          <div className="card-title">🏆 High Score</div>
+          <div className="card-value">{highScore}</div>
         </div>
 
-        <div className="profile-item">
-          <h3>🎨 Skins Owned</h3>
-          <p>{skins?.length ?? 0}</p>
+        <div className="profile-card">
+          <div className="card-title">🎨 Skins Owned</div>
+          <div className="card-value">{ownedSkins.length}</div>
         </div>
 
-        <div className="profile-item">
-          <h3>🪙 Token Balance</h3>
-          <p>{tokenBalance ?? 0} FLP</p>
+        <div className="profile-card">
+          <div className="card-title">💰 Tokens</div>
+          <div className="card-value">{tokens}</div>
         </div>
 
-        <div className="profile-item">
-          <h3>🔗 Wallet</h3>
-          <p>{account ? shortenAddress(account) : "Not connected"}</p>
+        <div className="profile-card">
+          <div className="card-title">🔗 Wallet Address</div>
+          <div className="card-value">
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "Not connected"}
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Profile;
-
+}
