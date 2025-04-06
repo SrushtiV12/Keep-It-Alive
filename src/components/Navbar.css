@@ -1,38 +1,107 @@
+/* Navbar.css */
+
 .navbar {
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: Arial, sans-serif;
+}
+
+.nav-logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4c51bf; /* Indigo shade */
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: #333;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.nav-links a:hover {
+  background: #f1f1f1;
+  color: #4c51bf;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.connect-btn {
+  background: #4c51bf;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.connect-btn:hover,
+.connect-btn:focus {
+  background: #434190;
+  outline: none;
+}
+
+/* Wallet address display */
+.wallet-address {
+  background: #e0e7ff;
+  color: #4c51bf;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.nav-toggle {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-toggle {
+    display: block;
+  }
+  .nav-links.open {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: #ffffff;
     padding: 10px 20px;
-    background-color: #333;
-    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-  
-  .navbar-left h1 {
-    margin: 0;
-    font-size: 1.5rem;
+  .nav-links.open a {
+    display: block;
+    margin: 10px 0;
   }
-  
-  .navbar-right {
-    display: flex;
-    align-items: center;
-  }
-  
-  .navbar-right button {
-    margin-left: 10px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  
-  .profile-btn {
-    background-color: #555;
-    color: #fff;
-  }
-  
-  .wallet-btn {
-    background-color: #e91e63;
-    color: #fff;
-  }
-  
+}

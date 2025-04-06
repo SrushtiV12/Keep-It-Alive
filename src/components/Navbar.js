@@ -1,60 +1,42 @@
-import React from 'react';
+// src/components/Navbar.js
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import "./Navbar.css";
 
-function Navbar(props) {
-  const handleNavigate = (page) => {
-    props.onNavigate(page);
+const Navbar = ({ connectWallet, account }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => setIsOpen(!isOpen);
+
+  // Shorten the address (e.g., 0x1234...abcd)
+  const shortenAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const handleConnect = () => {
-    props.onConnectWallet();
-  };
-
-  return React.createElement(
-    'nav',
-    { className: 'bg-gray-800 text-white p-4 flex justify-between items-center' },
-    React.createElement(
-      'div',
-      { className: 'space-x-4' },
-      React.createElement(
-        'button',
-        {
-          className: 'bg-blue-600 px-4 py-2 rounded hover:bg-blue-700',
-          onClick: () => handleNavigate('game')
-        },
-        'Game'
-      ),
-      React.createElement(
-        'button',
-        {
-          className: 'bg-green-600 px-4 py-2 rounded hover:bg-green-700',
-          onClick: () => handleNavigate('store')
-        },
-        'Store'
-      ),
-      React.createElement(
-        'button',
-        {
-          className: 'bg-purple-600 px-4 py-2 rounded hover:bg-purple-700',
-          onClick: () => handleNavigate('profile')
-        },
-        'Profile'
-      )
-    ),
-    React.createElement(
-      'div',
-      {},
-      React.createElement(
-        'button',
-        {
-          className: 'bg-yellow-500 px-4 py-2 rounded hover:bg-yellow-600',
-          onClick: handleConnect
-        },
-        props.walletAddress
-          ? `${props.walletAddress.substring(0, 6)}...${props.walletAddress.slice(-4)}`
-          : 'Connect Wallet'
-      )
-    )
+  return (
+    <nav className="navbar">
+      <div className="nav-logo">🐤 Bird Game</div>
+      <div className={`nav-links ${isOpen ? "open" : ""}`}>
+        <Link to="/" onClick={() => setIsOpen(false)}>Game</Link>
+        <Link to="/profile" onClick={() => setIsOpen(false)}>Profile</Link>
+      </div>
+      <div className="nav-right">
+        {account ? (
+          <div className="wallet-address">
+            {shortenAddress(account)}
+          </div>
+        ) : (
+          <button onClick={connectWallet} className="connect-btn">
+            Connect Wallet
+          </button>
+        )}
+        <div className="nav-toggle" onClick={toggleMenu}>
+          &#9776;
+        </div>
+      </div>
+    </nav>
   );
-}
+};
 
 export default Navbar;
