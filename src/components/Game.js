@@ -50,8 +50,8 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
     if (gameState !== 'Play') return;
     
     // Balanced game parameters
-    let move_speed = 8; // Slightly slower for better playability
-    let gravity = 0.35;   // Balanced gravity
+    let move_speed = 4; // Slightly slower for better playability
+    let gravity = 0.3;   // Balanced gravity
     
     bird_dy_ref.current = 0; // Reset bird velocity
     let pipe_separation = 0;
@@ -158,7 +158,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
 
 
       // Balanced pipe creation rate
-      if (pipe_separation > 50) {
+      if (pipe_separation > 100) {
 
         pipe_separation = 0;
         let pipe_posi = Math.floor(Math.random() * 43) + 8;
@@ -244,12 +244,17 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
       {gameState === 'End' && (
         <div className="game-over-dialog">
           <div className="game-over-content">
-            <h2>Game Over!</h2>
-            <p>Your Score: <span>{currentScore}</span></p>
-            <p>High Score: <span>{highScore}</span></p>
-            <p>Press <strong>Enter</strong> to Play Again</p>
-            <button className="start-button" onClick={startGame}>PLAY AGAIN</button>
-          </div>
+  <h2 className="game-over-title">Game Over!</h2>
+  <p className="game-over-text">
+    Your Score: <span className="game-over-score">{currentScore}</span>
+  </p>
+  <p className="game-over-text">
+    High Score: <span className="game-over-highscore">{highScore}</span>
+  </p>
+  <p className="game-over-instruction">Press <strong>Enter</strong> to Play Again</p>
+  <button className="start-button" onClick={startGame}>PLAY AGAIN</button>
+</div>
+
         </div>
       )}
     </div>
