@@ -231,7 +231,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
       <div className="background"></div>
       {/* Dedicated container for pipes */}
       <div className="pipes-container"></div>
-      <img src={birdImg} alt="bird-img" className="bird" id="bird-1" />
+      <img src={birdImage} alt="bird-img" className="bird" id="bird-1" />
 
       {gameState === 'Start' && (
         <StartScreen startGame={startGame} />
