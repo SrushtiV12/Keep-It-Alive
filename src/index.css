@@ -10,12 +10,28 @@ body {
 .background {
 	height: 100vh;
 	width: 100vw;
-  background-image: url('./assets/images/main-image.png');
+  /* background-image: url('./assets/images/main-image.png'); */
   -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
+	z-index: -1;
+  transition: background 1s ease;
+
 }
+
+.bg-default {
+	background-image: url('./assets/images/main-image.png');
+}
+
+.bg-alt {
+	background-image: url('./assets/images/pixel-art-city-game.webp');
+}
+.bg-1 {
+	background-image: url('./assets/images/MfwuIX.png');
+}
+
+
 .bird {
 	height: 100px;
 	width: 130px;
