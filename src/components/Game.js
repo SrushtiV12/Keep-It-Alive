@@ -62,7 +62,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens }) {
     if (gameState !== 'Play') return;
     
     // Balanced game parameters
-    let move_speed = 4.5; // Slightly slower for better playability
+    let move_speed = 8; // Slightly slower for better playability
     let gravity = 0.35;   // Balanced gravity
     
     bird_dy_ref.current = 0; // Reset bird velocity
@@ -183,7 +183,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens }) {
       if (gameStateRef.current !== 'Play') return;
 
       // Balanced pipe creation rate
-      if (pipe_separation > 80) {
+      if (pipe_separation > 50) {
         pipe_separation = 0;
         let pipe_posi = Math.floor(Math.random() * 43) + 8;
         
