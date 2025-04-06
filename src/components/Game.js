@@ -47,13 +47,17 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
     };
   }, []);
 
+
+  const moveSpeedRef = useRef(3); // Initial move speed
+
   // Main game logic effect
   useEffect(() => {
     console.log("Effect running with gameState:", gameState);
     if (gameState !== 'Play') return;
     
     // Balanced game parameters
-    let move_speed = 4; // Slightly slower for better playability
+    // let move_speed = 4; // Slightly slower for better playability
+    
     let gravity = 0.3;   // Balanced gravity
     
     bird_dy_ref.current = 0; // Reset bird velocity
@@ -109,6 +113,9 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
     function movePipes() {
       if (gameStateRef.current !== 'Play') return;
 
+      moveSpeedRef.current = 4 + currentScore * 0.05; // Increase speed linearly with score
+
+
       pipesContainer.querySelectorAll('.pipe_sprite').forEach(pipe => {
         let pipe_props = pipe.getBoundingClientRect();
         let bird_props = bird.getBoundingClientRect();
@@ -134,7 +141,9 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
             setTokens(prev => prev + 1);
           }
 
-          pipe.style.left = pipe_props.left - move_speed + 'px';
+          // pipe.style.left = pipe_props.left - move_speed + 'px';
+          pipe.style.left = pipe_props.left - moveSpeedRef.current + 'px';
+
         }
       });
       animation_ids.current.push(requestAnimationFrame(movePipes));
