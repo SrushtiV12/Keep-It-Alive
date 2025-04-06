@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import abi from "./abis/tokenABI.json";
 import { ethers } from "ethers";
@@ -8,6 +8,8 @@ import Game from "./components/Game";
 // import Profile from './components/Profile';
 // import Store from './components/Store';
 import './index.css';
+import Store from './components/Store';
+
 
 export default function App() {
   const [state, setState] = useState({
@@ -18,8 +20,8 @@ export default function App() {
   const [account, setAccount] = useState(null);
   const [highScore, setHighScore] = useState(localStorage.getItem("flappy-high-score") || 0);
   const [tokens, setTokens] = useState(100);
-  const [ownedSkins, setOwnedSkins] = useState(['default']);
-  const [currentSkin, setCurrentSkin] = useState('default');
+  const [ownedSkins, setOwnedSkins] = useState([]);  // Array to hold the skins the user owns
+  const [currentSkin, setCurrentSkin] = useState(null);  // The skin that the user currently has selected
 
   const connectWallet = async () => {
     const contractAddress = "0xdc35d0343782399A9240590C6E6901d96dFC8134";
@@ -50,26 +52,84 @@ export default function App() {
     }
   };
 
+  const handlePurchase = async (skin, price) => {
+    if (tokens < price) {
+      alert("Not enough tokens!");
+      return;
+    }
+  
+    // Subtract tokens after purchasing
+    setTokens(prev => prev - price);
+  
+    // Add the skin to owned skins
+    setOwnedSkins((prevSkins) => [...prevSkins, skin]);
+  
+    // ✅ Immediately set the purchased skin as current
+    setCurrentSkin(skin);
+  
+    // Persist in localStorage
+    localStorage.setItem("current-skin", JSON.stringify(skin));
+  
+    alert(`Successfully purchased ${skin.name || skin.id || 'skin'}`);
+  };
+  useEffect(() => {
+    const savedSkin = localStorage.getItem("current-skin");
+    if (savedSkin) {
+      setCurrentSkin(JSON.parse(savedSkin));
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (currentSkin) {
+      localStorage.setItem("current-skin", JSON.stringify(currentSkin));
+    }
+  }, [currentSkin]);
+
   return (
     <Router>
       <div className="bg-gradient-to-br from-indigo-100 to-blue-200 min-h-screen text-gray-900">
         <Navbar connectWallet={connectWallet} account={account} state={state} />
-        <Routes>  
+        <Routes>
+        <Route
+  path="/"
+  element={
+    <Game
+      highScore={highScore}
+      setHighScore={setHighScore}
+      tokens={tokens}
+      setTokens={setTokens}
+      currentSkin={currentSkin} // ✅ Pass current skin
+    />
+  }
+/>
           <Route
-            path="/"
+            path="/store"
             element={
-              <Game
-                highScore={highScore}
-                setHighScore={setHighScore}
+              <Store
+                account={account}
+                contract={state.contract}
                 tokens={tokens}
                 setTokens={setTokens}
+                ownedSkins={ownedSkins}
+                setOwnedSkins={setOwnedSkins}
+                currentSkin={currentSkin}
+                setCurrentSkin={setCurrentSkin}
+                handlePurchase={handlePurchase}
               />
             }
           />
-          {/*
-          <Route path="/profile" element={<Profile highScore={highScore} tokens={tokens} ownedSkins={ownedSkins} currentSkin={currentSkin} />} />
-          <Route path="/store" element={<Store tokens={tokens} ownedSkins={ownedSkins} currentSkin={currentSkin} buySkin={buySkin} selectSkin={selectSkin} />} />
-          */}
+          <Route
+  path="/"
+  element={
+    <Game
+      highScore={highScore}
+      setHighScore={setHighScore}
+      tokens={tokens}
+      setTokens={setTokens}
+      currentSkin={currentSkin} // 👈 Pass this down
+    />
+  }
+/>
         </Routes>
       </div>
     </Router>
