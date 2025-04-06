@@ -36,3 +36,4 @@ export default function Profile({ account, highScore, tokens, ownedSkins }) {
     </div>
   );
 }
+

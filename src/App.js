@@ -119,18 +119,17 @@ export default function App() {
               />
             }
           />
-          <Route
-  path="/"
-  element={
-    <Game
-      highScore={highScore}
-      setHighScore={setHighScore}
-      tokens={tokens}
-      setTokens={setTokens}
-      currentSkin={currentSkin} // 👈 Pass this down
-    />
-  }
-/>
+                    <Route
+            path="/profile"
+            element={
+              <Profile
+                account={account}
+                highScore={highScore}
+                tokens={tokens}
+                ownedSkins={ownedSkins}
+              />
+            }
+          />
         </Routes>
       </div>
     </Router>
