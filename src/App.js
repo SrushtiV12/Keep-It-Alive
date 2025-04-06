@@ -5,8 +5,7 @@ import abi from "./abis/tokenABI.json";
 import { ethers } from "ethers";
 import Navbar from "./components/Navbar";
 import Game from "./components/Game";
-import Profile from './components/Profile'; // ✅ Un-commented
-// import Store from './components/Store'; // You can enable later if needed
+import Profile from './components/Profile';
 import './index.css';
 
 export default function App() {
@@ -54,7 +53,10 @@ export default function App() {
   return (
     <Router>
       <div className="bg-gradient-to-br from-indigo-100 to-blue-200 min-h-screen text-gray-900">
+        {/* Navbar visible on all pages */}
         <Navbar connectWallet={connectWallet} account={account} state={state} />
+
+        {/* Only one page shows at a time */}
         <Routes>  
           <Route
             path="/"
@@ -67,7 +69,6 @@ export default function App() {
               />
             }
           />
-          {}
           <Route
             path="/profile"
             element={
@@ -84,4 +85,3 @@ export default function App() {
     </Router>
   );
 }
-
