@@ -15,6 +15,9 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
   const isDefaultBird = !currentSkin; // true if no purchased skin is selected
   const birdImage = currentSkin?.image || birdImg;
   const birdFlapImage = currentSkin?.flapImage || birdImg2;
+  const [backgroundClass, setBackgroundClass] = useState('bg-default');
+
+
 
   // Function to start game
   const startGame = () => {
@@ -226,9 +229,22 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, curre
     };
   }, [gameState, highScore, setHighScore, setTokens]);
 
+  useEffect(() => {
+    if (currentScore >= 30){
+      setBackgroundClass('bg-default')
+    }
+    else if (currentScore >= 20) {
+      setBackgroundClass('bg-alt'); // Switch background after 10 points
+    } else if(currentScore >= 10) {
+      setBackgroundClass('bg-1')
+    } else {
+      setBackgroundClass('bg-default');
+    }
+  }, [currentScore]);
+  
   return (
     <div className='game-block'>
-      <div className="background"></div>
+      <div className={`background ${backgroundClass}`}></div>
       {/* Dedicated container for pipes */}
       <div className="pipes-container"></div>
       <img src={birdImage} alt="bird-img" className="bird" id="bird-1" />
