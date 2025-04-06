@@ -5,8 +5,7 @@ import abi from "./abis/tokenABI.json";
 import { ethers } from "ethers";
 import Navbar from "./components/Navbar";
 import Game from "./components/Game";
-// import Profile from './components/Profile';
-// import Store from './components/Store';
+import Profile from './components/Profile';
 import './index.css';
 import Store from './components/Store';
 
@@ -17,6 +16,7 @@ export default function App() {
     signer: null,
     contract: null
   });
+
   const [account, setAccount] = useState(null);
   const [highScore, setHighScore] = useState(localStorage.getItem("flappy-high-score") || 0);
   const [tokens, setTokens] = useState(100);
@@ -88,6 +88,7 @@ export default function App() {
   return (
     <Router>
       <div className="bg-gradient-to-br from-indigo-100 to-blue-200 min-h-screen text-gray-900">
+        {/* Navbar visible on all pages */}
         <Navbar connectWallet={connectWallet} account={account} state={state} />
         <Routes>
         <Route

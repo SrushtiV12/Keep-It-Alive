@@ -32,6 +32,7 @@ body {
 	width: 6vw;
 	background: radial-gradient(lightgreen 50%, green);
 	border: 5px solid black;
+	z-index: 0;
 }
 .message {
 	position: absolute;
