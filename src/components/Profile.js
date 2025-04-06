@@ -1,24 +1,41 @@
-import React from 'react';
+import React from "react";
+import "./Profile.css";
 
-const SKINS = [
-  { id: "default", name: "Default Bird" },
-  { id: "golden", name: "Golden Bird" },
-  { id: "robot", name: "Robot Bird" },
-  { id: "ninja", name: "Ninja Bird" },
-  { id: "rainbow", name: "Rainbow Bird" },
-];
-
-export default function Profile({ highScore, tokens, ownedSkins, currentSkin }) {
-  const ownedSkinNames = SKINS.filter(s => ownedSkins.includes(s.id)).map(s => s.name);
-  const currentSkinName = SKINS.find(s => s.id === currentSkin)?.name || "Default Bird";
+const Profile = ({ account, highScore, skins, tokenBalance }) => {
+  // Shorten wallet address like 0x1234...abcd
+  const shortenAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
   return (
-    <div className="p-6 text-white">
-      <h2 className="text-3xl text-purple-400 mb-4">Profile</h2>
-      <p><strong>High Score:</strong> {highScore}</p>
-      <p><strong>Tokens:</strong> {tokens}</p>
-      <p><strong>Skins Owned:</strong> {ownedSkins.length}</p>
-      <p><strong>Current Skin:</strong> {currentSkinName}</p>
+    <div className="profile-container">
+      <h2 className="profile-title">👤 Your Profile</h2>
+
+      <div className="profile-card">
+        <div className="profile-item">
+          <h3>🏆 High Score</h3>
+          <p>{highScore ?? 0}</p>
+        </div>
+
+        <div className="profile-item">
+          <h3>🎨 Skins Owned</h3>
+          <p>{skins?.length ?? 0}</p>
+        </div>
+
+        <div className="profile-item">
+          <h3>🪙 Token Balance</h3>
+          <p>{tokenBalance ?? 0} FLP</p>
+        </div>
+
+        <div className="profile-item">
+          <h3>🔗 Wallet</h3>
+          <p>{account ? shortenAddress(account) : "Not connected"}</p>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Profile;
+
