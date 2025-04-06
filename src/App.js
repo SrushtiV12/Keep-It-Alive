@@ -5,8 +5,8 @@ import abi from "./abis/tokenABI.json";
 import { ethers } from "ethers";
 import Navbar from "./components/Navbar";
 import Game from "./components/Game";
-// import Profile from './components/Profile';
-// import Store from './components/Store';
+import Profile from './components/Profile'; // ✅ Un-commented
+// import Store from './components/Store'; // You can enable later if needed
 import './index.css';
 
 export default function App() {
@@ -15,6 +15,7 @@ export default function App() {
     signer: null,
     contract: null
   });
+
   const [account, setAccount] = useState(null);
   const [highScore, setHighScore] = useState(localStorage.getItem("flappy-high-score") || 0);
   const [tokens, setTokens] = useState(100);
@@ -66,12 +67,21 @@ export default function App() {
               />
             }
           />
-          {/*
-          <Route path="/profile" element={<Profile highScore={highScore} tokens={tokens} ownedSkins={ownedSkins} currentSkin={currentSkin} />} />
-          <Route path="/store" element={<Store tokens={tokens} ownedSkins={ownedSkins} currentSkin={currentSkin} buySkin={buySkin} selectSkin={selectSkin} />} />
-          */}
+          {}
+          <Route
+            path="/profile"
+            element={
+              <Profile
+                account={account}
+                highScore={highScore}
+                tokens={tokens}
+                ownedSkins={ownedSkins}
+              />
+            }
+          />
         </Routes>
       </div>
     </Router>
   );
 }
+
