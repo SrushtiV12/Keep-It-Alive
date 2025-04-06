@@ -56,10 +56,12 @@ export default function Game({ highScore, setHighScore, tokens, setTokens }) {
   useEffect(() => {
     console.log("Effect running with gameState:", gameState);
     if (gameState !== 'Play') return;
-
-    let move_speed = 4.5;
-    let gravity = 0.35;
-    bird_dy_ref.current = 0;
+    
+    // Balanced game parameters
+    let move_speed = 8; // Slightly slower for better playability
+    let gravity = 0.35;   // Balanced gravity
+    
+    bird_dy_ref.current = 0; // Reset bird velocity
     let pipe_separation = 0;
 
     const bird = document.querySelector('.bird');
@@ -155,7 +157,11 @@ export default function Game({ highScore, setHighScore, tokens, setTokens }) {
 
     function createPipes() {
       if (gameStateRef.current !== 'Play') return;
-      if (pipe_separation > 80) {
+
+
+      // Balanced pipe creation rate
+      if (pipe_separation > 50) {
+
         pipe_separation = 0;
         let pipe_posi = Math.floor(Math.random() * 43) + 8;
         const pipe_gap = 42;
