@@ -54,7 +54,7 @@ export default function App() {
     <Router>
       <div className="bg-gradient-to-br from-indigo-100 to-blue-200 min-h-screen text-gray-900">
         <Navbar connectWallet={connectWallet} account={account} state={state} />
-        <Routes>
+        <Routes>  
           <Route
             path="/"
             element={
