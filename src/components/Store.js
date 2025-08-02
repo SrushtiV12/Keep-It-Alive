@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './Store.css';
 import skins from '../data/skins';
 
 const Store = ({ tokens, ownedSkins, handlePurchase, currentSkin, setCurrentSkin }) => {
+  console.log("Store component - tokens:", tokens, "type:", typeof tokens);
+  // Set default skin if none is selected
+  useEffect(() => {
+    if (!currentSkin && ownedSkins.includes('default')) {
+      const defaultSkin = skins.find(skin => skin.id === 'default');
+      if (defaultSkin) {
+        setCurrentSkin(defaultSkin);
+      }
+    }
+  }, [currentSkin, ownedSkins, setCurrentSkin]);
   const handleSelectSkin = (skin) => {
     setCurrentSkin(skin);
   };
@@ -13,7 +23,7 @@ const Store = ({ tokens, ownedSkins, handlePurchase, currentSkin, setCurrentSkin
         <h1>Store</h1>
         <div className="token-balance">
           <span className="token-icon">💰</span>
-          <span>{tokens} Tokens</span>
+          <span>{tokens || 0} Tokens</span>
         </div>
       </div>
 
@@ -26,7 +36,9 @@ const Store = ({ tokens, ownedSkins, handlePurchase, currentSkin, setCurrentSkin
             </div>
             <div className="skin-info">
               <h3>{skin.name}</h3>
-              <div className="skin-price">{skin.price} Tokens</div>
+              <div className="skin-price">
+                {skin.price === 0 ? 'Free' : `${skin.price} Tokens`}
+              </div>
             </div>
             <div className="skin-actions">
               {ownedSkins.includes(skin.id) ? (
@@ -40,9 +52,9 @@ const Store = ({ tokens, ownedSkins, handlePurchase, currentSkin, setCurrentSkin
                 <button
                   className="buy-btn"
                   onClick={() => handlePurchase(skin)}
-                  disabled={tokens < skin.price}
+                  disabled={(tokens || 0) < skin.price}
                 >
-                  Buy
+                  {(tokens || 0) < skin.price ? `Need ${skin.price - (tokens || 0)} more` : `Buy for ${skin.price}`}
                 </button>
               )}
             </div>
