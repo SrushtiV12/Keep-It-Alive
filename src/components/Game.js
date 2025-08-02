@@ -6,7 +6,7 @@ import soundDie from '../assets/sounds/die.mp3';
 import StartScreen from './StartScreen';
 import '../index.css';
 
-export default function Game({ highScore, setHighScore, tokens, setTokens, incrementTokens, currentSkin, account, connectWallet, isConnecting }) {
+export default function Game({ highScore, setHighScore, tokens, setTokens, incrementTokens, currentSkin, account, connectWallet, isConnecting, setTotalGamesPlayed }) {
   const [gameState, setGameState] = useState('Start');
   const [currentScore, setCurrentScore] = useState(0);
   const gameStateRef = useRef('Start');
@@ -23,6 +23,35 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
   const birdImageRef = useRef(birdImage);
   const birdFlapImageRef = useRef(birdFlapImage);
   const isDefaultBirdRef = useRef(isDefaultBird);
+  
+  // Add a flag to prevent multiple token transfers
+  const tokenTransferInProgress = useRef(false);
+  
+  // Very High Token Conversion Rate
+  const calculateTokensForScore = (score) => {
+    // Much higher base tokens per pipe
+    let baseTokens = 5; // Increased from 1 to 5
+    
+    // Very generous bonus tokens for milestones
+    if (score >= 50) return 50; // Massive bonus for high scores
+    if (score >= 30) return 25; // Big bonus for medium scores
+    if (score >= 20) return 15; // Good bonus for decent scores
+    if (score >= 10) return 10; // Nice bonus for early scores
+    
+    return baseTokens; // Default 5 tokens per pipe
+  };
+  
+  // Calculate total tokens earned for entire game session
+  const calculateTotalTokensForGame = (finalScore) => {
+    let totalTokens = 0;
+    
+    // Calculate tokens for each score milestone reached
+    for (let i = 1; i <= finalScore; i++) {
+      totalTokens += calculateTokensForScore(i);
+    }
+    
+    return totalTokens;
+  };
   
   // Update refs when props change
   useEffect(() => {
@@ -45,10 +74,15 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
       img.style.display = 'block';
     }
     
+    // Increment total games played
+    if (setTotalGamesPlayed) {
+      setTotalGamesPlayed(prev => prev + 1);
+    }
+    
     // Update game state
     gameStateRef.current = 'Play';
     setGameState('Play');
-  }, []);
+  }, [setTotalGamesPlayed]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -123,12 +157,25 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
         if (pipe_props.right <= 0) {
           pipe.remove();
         } else {
+          // Improved collision detection - more accurate and less sensitive
+          const birdLeft = bird_props.left;
+          const birdRight = bird_props.left + bird_props.width;
+          const birdTop = bird_props.top;
+          const birdBottom = bird_props.top + bird_props.height;
+          
+          const pipeLeft = pipe_props.left;
+          const pipeRight = pipe_props.left + pipe_props.width;
+          const pipeTop = pipe_props.top;
+          const pipeBottom = pipe_props.top + pipe_props.height;
+          
+          // Check for collision with more precise boundaries
           if (
-            bird_props.left < pipe_props.left + pipe_props.width - 5 &&
-            bird_props.left + bird_props.width - 5 > pipe_props.left &&
-            bird_props.top < pipe_props.top + pipe_props.height - 5 &&
-            bird_props.top + bird_props.height - 5 > pipe_props.top
+            birdRight > pipeLeft + 10 && // Bird is past the left edge of pipe
+            birdLeft < pipeRight - 10 && // Bird is before the right edge of pipe
+            birdBottom > pipeTop + 10 && // Bird is below the top of pipe
+            birdTop < pipeBottom - 10    // Bird is above the bottom of pipe
           ) {
+            console.log("Collision detected - Game Over!");
             gameOver();
             return;
           }
@@ -139,7 +186,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
             sound_point.play();
             pipe.setAttribute('increase_score', '0');
             
-            // Add visual feedback for token earning
+            // Add visual feedback for token earning (local only during gameplay)
             const tokenNotification = document.createElement('div');
             tokenNotification.className = 'token-notification';
             tokenNotification.textContent = '+1 Token!';
@@ -166,9 +213,19 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
               }
             }, 2000);
             
-            console.log("About to increment tokens. Current tokens:", tokens);
-            incrementTokens(1);
-            console.log("Increment tokens called");
+            // Enhanced token earning system - more tokens for better performance
+            const tokensToAdd = calculateTokensForScore(newScore);
+            
+            // Only update local state during gameplay - no blockchain calls
+            console.log(`Earning ${tokensToAdd} tokens during gameplay (local only)`);
+            setTokens(prevTokens => {
+              const newTokens = prevTokens + tokensToAdd;
+              localStorage.setItem("flappy-tokens", newTokens.toString());
+              return newTokens;
+            });
+            
+            // Update notification to show actual tokens earned
+            tokenNotification.textContent = `+${tokensToAdd} Tokens!`;
           }
 
           pipe.style.left = pipe_props.left - moveSpeedRef.current + 'px';
@@ -217,9 +274,9 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
 
       pipe_separation_ref.current++;
       animation_ids.current.push(requestAnimationFrame(createPipes));
-    }
+         }
 
-    function gameOver() {
+     function gameOver() {
       gameStateRef.current = 'End';
       setGameState('End');
       if (img) img.style.display = 'none';
@@ -235,6 +292,27 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
       scoreDisplay.style.display = 'none';
       animation_ids.current.forEach(id => cancelAnimationFrame(id));
       animation_ids.current = [];
+
+      // Transfer earned tokens to wallet only after game over (with protection)
+      if (account && score > 0 && !tokenTransferInProgress.current) {
+        // Calculate total tokens earned for this game session
+        const totalTokensEarned = calculateTotalTokensForGame(score);
+        
+        console.log(`Game over - transferring ${totalTokensEarned} earned tokens to wallet`);
+        tokenTransferInProgress.current = true;
+        
+        setTimeout(async () => {
+          try {
+            await incrementTokens(totalTokensEarned);
+            console.log("Tokens transferred successfully after game over");
+          } catch (error) {
+            console.error("Error transferring tokens after game over:", error);
+          } finally {
+            // Reset the flag after transfer completes (success or failure)
+            tokenTransferInProgress.current = false;
+          }
+        }, 1000); // Small delay to ensure game over animation plays first
+      }
     }
 
     const timeout = setTimeout(() => {
@@ -288,32 +366,14 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
         />
       )}
 
-             <div className="score" style={{ display: gameState === 'Play' ? 'block' : 'none' }}>
-         <span className="score_title">Score: </span>
-         <span className="score_val">0</span>
-       </div>
-               <div className="token-display" style={{ display: gameState === 'Play' ? 'block' : 'none' }}>
-          <span className="token_title">Tokens: </span>
-          <span className="token_val">{tokens}</span>
-          <button 
-            onClick={() => {
-              console.log("Manual token increment clicked. Current tokens:", tokens);
-              incrementTokens(1);
-            }}
-            style={{
-              marginLeft: '10px',
-              padding: '2px 8px',
-              fontSize: '12px',
-              background: '#f59e0b',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            +1 Test
-          </button>
-        </div>
+      <div className="score" style={{ display: gameState === 'Play' ? 'block' : 'none' }}>
+        <span className="score_title">Score: </span>
+        <span className="score_val">0</span>
+      </div>
+      <div className="token-display" style={{ display: gameState === 'Play' ? 'block' : 'none' }}>
+        <span className="token_title">Tokens: </span>
+        <span className="token_val">{tokens}</span>
+      </div>
       {gameState === 'End' && (
         <div className="game-over-dialog">
           <div className="game-over-content">

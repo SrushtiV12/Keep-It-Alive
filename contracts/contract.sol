@@ -12,16 +12,28 @@ contract MyToken is ERC20, Ownable {
     // --- Game Logic: High Scores ---
     mapping(address => uint256) public highScores;
 
-    function submitScore(uint256 score) external {
-        require(score > highScores[msg.sender], "Not a high score");
+    // function submitScore(uint256 score) external {
+    //     require(score > highScores[msg.sender], "Not a high score");
 
-        highScores[msg.sender] = score;
+    //     highScores[msg.sender] = score;
 
-        uint256 rewardAmount = score * 10 ** decimals();
-        require(balanceOf(address(this)) >= rewardAmount, "Not enough tokens in contract");
+    //     uint256 rewardAmount = score * 10 **18 decimals();
+    //     require(balanceOf(address(this)) >= rewardAmount, "Not enough tokens in contract");
 
-        _transfer(address(this), msg.sender, rewardAmount);
-    }
+    //     _transfer(address(this), msg.sender, rewardAmount);
+    // }
+     function submitScore(uint256 score) external {
+    require(score > highScores[msg.sender], "Not a high score");
+
+    highScores[msg.sender] = score;
+
+    // Reward is fixed to 1 MTK token (with decimals)
+    uint256 rewardAmount = 1 * (10 ** decimals());
+
+    require(balanceOf(address(this)) >= rewardAmount, "Not enough tokens in contract");
+
+    _transfer(address(this), msg.sender, rewardAmount);
+}
 
     // --- Token Management ---
     function transferFromContract(address to, uint256 amount) external onlyOwner {

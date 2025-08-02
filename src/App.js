@@ -41,7 +41,21 @@ export default function App() {
     const savedOwnedSkins = localStorage.getItem("flappy-owned-skins");
     return savedOwnedSkins ? JSON.parse(savedOwnedSkins) : ['default'];
   });
-  const [currentSkin, setCurrentSkin] = useState(null);
+  const [currentSkin, setCurrentSkin] = useState(() => {
+    const savedSkin = localStorage.getItem("current-skin");
+    return savedSkin ? JSON.parse(savedSkin) : 'default';
+  });
+
+  // Mock data for new profile features
+  const [totalGamesPlayed, setTotalGamesPlayed] = useState(() => {
+    const saved = localStorage.getItem("total-games-played");
+    return saved ? parseInt(saved) : 0;
+  });
+
+  const [averageScore, setAverageScore] = useState(() => {
+    const saved = localStorage.getItem("average-score");
+    return saved ? parseFloat(saved) : 0;
+  });
 
   const contractAddress = "0xdc35d0343782399A9240590C6E6901d96dFC8134";
   const contractABI = abi.abi;
@@ -85,6 +99,11 @@ export default function App() {
       localStorage.setItem("wallet-address", accountAddress);
       
       console.log("Wallet connected successfully:", accountAddress);
+      
+      // Update wallet balance from blockchain
+      setTimeout(async () => {
+        await updateWalletBalance();
+      }, 1000);
     } catch (error) {
       console.error("Error connecting wallet:", error);
       setConnectionError("Failed to connect wallet");
@@ -221,24 +240,101 @@ export default function App() {
   }, [tokens]);
 
   // Create a robust token increment function
-  const incrementTokens = useCallback((amount = 1) => {
+  const incrementTokens = useCallback(async (amount = 1) => {
     console.log("incrementTokens function called with amount:", amount);
+    
+    // Update local state immediately for UI responsiveness
     setTokens(prevTokens => {
-      // Ensure prevTokens is a valid number
       const currentTokens = typeof prevTokens === 'number' && !isNaN(prevTokens) ? prevTokens : 0;
-      console.log("Previous tokens:", currentTokens, "Type:", typeof currentTokens);
       const newTokens = currentTokens + amount;
       console.log(`Incrementing tokens: ${currentTokens} + ${amount} = ${newTokens}`);
       localStorage.setItem("flappy-tokens", newTokens.toString());
       return newTokens;
     });
-  }, []);
+
+    // If wallet is connected, transfer tokens from contract to wallet
+    if (account && state.contract) {
+      try {
+        console.log("Transferring tokens from contract to wallet...");
+        
+        // Convert token amount to wei (18 decimals)
+        const tokenAmountInWei = ethers.parseUnits(amount.toString(), 18);
+        console.log(`Converting ${amount} tokens to wei: ${tokenAmountInWei.toString()}`);
+        
+        const tx = await state.contract.transferFromContract(account, tokenAmountInWei);
+        await tx.wait();
+        console.log("Tokens transferred successfully to wallet!");
+        
+        // Update local balance to match blockchain
+        await updateWalletBalance();
+      } catch (error) {
+        console.error("Error transferring tokens to wallet:", error);
+        // Don't revert local state - keep the UI responsive
+      }
+    }
+  }, [account, state.contract]);
+
+  // Function to update wallet balance from blockchain
+  const updateWalletBalance = useCallback(async () => {
+    if (account && state.contract) {
+      try {
+        const balance = await state.contract.balanceOf(account);
+        // Convert balance from wei to tokens (18 decimals)
+        const balanceInTokens = ethers.formatUnits(balance, 18);
+        const balanceNumber = parseFloat(balanceInTokens);
+        console.log("Wallet balance from blockchain (wei):", balance.toString());
+        console.log("Wallet balance from blockchain (tokens):", balanceNumber);
+        setTokens(balanceNumber);
+        localStorage.setItem("flappy-tokens", balanceNumber.toString());
+      } catch (error) {
+        console.error("Error fetching wallet balance:", error);
+      }
+    }
+  }, [account, state.contract]);
+
+  // Function to transfer tokens from contract to wallet
+  const transferTokensToWallet = useCallback(async (amount) => {
+    if (!account || !state.contract) {
+      console.log("Wallet not connected or contract not available");
+      return false;
+    }
+
+    try {
+      console.log(`Transferring ${amount} tokens to wallet...`);
+      
+      // Convert token amount to wei (18 decimals)
+      const tokenAmountInWei = ethers.parseUnits(amount.toString(), 18);
+      console.log(`Converting ${amount} tokens to wei: ${tokenAmountInWei.toString()}`);
+      
+      const tx = await state.contract.transferFromContract(account, tokenAmountInWei);
+      await tx.wait();
+      console.log("Tokens transferred successfully!");
+      
+      // Update balance after transfer
+      await updateWalletBalance();
+      return true;
+    } catch (error) {
+      console.error("Error transferring tokens:", error);
+      return false;
+    }
+  }, [account, state.contract, updateWalletBalance]);
 
   // Save ownedSkins to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("flappy-owned-skins", JSON.stringify(ownedSkins));
     console.log("Owned skins updated:", ownedSkins);
   }, [ownedSkins]);
+
+  // Save total games played and average score to localStorage
+  useEffect(() => {
+    localStorage.setItem("total-games-played", totalGamesPlayed.toString());
+    localStorage.setItem("average-score", averageScore.toString());
+  }, [totalGamesPlayed, averageScore]);
+
+  // Function to handle store navigation from profile
+  const handleVisitStore = () => {
+    window.location.href = '/store';
+  };
 
   return (
     <Router>
@@ -265,6 +361,7 @@ export default function App() {
                 account={account}
                 connectWallet={connectWallet}
                 isConnecting={isConnecting}
+                setTotalGamesPlayed={setTotalGamesPlayed}
               />
             }
           />
@@ -292,6 +389,12 @@ export default function App() {
                 highScore={highScore}
                 tokens={tokens}
                 ownedSkins={ownedSkins}
+                currentSkin={currentSkin}
+                totalGamesPlayed={totalGamesPlayed}
+                averageScore={averageScore}
+                onVisitStore={handleVisitStore}
+                transferTokensToWallet={transferTokensToWallet}
+                updateWalletBalance={updateWalletBalance}
               />
             }
           />
