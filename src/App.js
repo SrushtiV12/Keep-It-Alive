@@ -379,6 +379,7 @@ export default function App() {
                 currentSkin={currentSkin}
                 setCurrentSkin={setCurrentSkin}
                 handlePurchase={handlePurchase}
+                highScore={highScore}
               />
             }
           />

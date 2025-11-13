@@ -33,6 +33,8 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
   const isDefaultBird = !currentSkin; // true if no purchased skin is selected
   const birdImage = currentSkin?.image || birdImg;
   const birdFlapImage = currentSkin?.flapImage || birdImg2;
+  const birdFilter = currentSkin?.filter || '';
+  const birdStyle = birdFilter ? { filter: birdFilter } : undefined;
   const [backgroundClass, setBackgroundClass] = useState('bg-default');
   
   // Store these in refs to prevent useEffect re-runs
@@ -640,7 +642,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
     <div className='game-block'>
       <div className={`background ${backgroundClass}`}></div>
       <div className="pipes-container"></div>
-      <img src={birdImage} alt="bird-img" className="bird" id="bird-1" />
+      <img src={birdImage} alt="bird-img" className="bird" id="bird-1" style={birdStyle} />
 
       {gameState === 'Start' && (
         <StartScreen 
