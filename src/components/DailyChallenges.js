@@ -40,20 +40,17 @@ const DailyChallenges = ({ tokens, setTokens, highScore, totalGamesPlayed }) => 
     return saved ? parseInt(saved) : 0;
   });
 
-  // Get today's best score from localStorage
   const getTodayBestScore = () => {
     const today = new Date();
     const todayKey = `challenges-today-best-score-${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
     return parseInt(localStorage.getItem(todayKey) || '0');
   };
 
-  // Track today's best score and listen for game score updates
   useEffect(() => {
     const today = getTodayDate();
     const savedDate = localStorage.getItem('challenges-date');
     
     if (savedDate !== today) {
-      // Reset if new day
       const newChallenges = initializeChallenges();
       setChallenges(newChallenges);
       setGamesPlayedToday(0);
