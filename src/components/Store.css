@@ -103,6 +103,30 @@
     font-weight: bold;
   }
   
+.unlock-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #fbbf24;
+  color: #92400e;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.unlock-badge.unlocked {
+  background: #10b981;
+  color: white;
+}
+
+.unlock-badge.locked {
+  background: #f97316;
+  color: white;
+}
+
   .skin-info {
     padding: 1rem;
   }
@@ -118,6 +142,18 @@
     font-size: 1.2rem;
   }
   
+.skin-requirement {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.skin-requirement.met {
+  color: #047857;
+  font-weight: 600;
+}
+
   .skin-actions {
     padding: 0 1rem 1rem 1rem;
   }
@@ -162,6 +198,35 @@
     background: #c7d2fe;
   }
   
+.claim-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: white;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.claim-btn:hover {
+  background: linear-gradient(135deg, #0284c7, #1d4ed8);
+  transform: translateY(-2px);
+}
+
+.locked-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
   @media (max-width: 768px) {
     .store-header {
       flex-direction: column;

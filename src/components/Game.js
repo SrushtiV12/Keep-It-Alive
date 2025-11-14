@@ -9,14 +9,32 @@ import '../index.css';
 export default function Game({ highScore, setHighScore, tokens, setTokens, incrementTokens, currentSkin, account, connectWallet, isConnecting, setTotalGamesPlayed }) {
   const [gameState, setGameState] = useState('Start');
   const [currentScore, setCurrentScore] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [combo, setCombo] = useState(0);
+  const [comboMultiplier, setComboMultiplier] = useState(1);
+  const [activePowerUp, setActivePowerUp] = useState(null);
+  const [powerUpTimer, setPowerUpTimer] = useState(0);
+  const [difficulty, setDifficulty] = useState('medium'); // easy, medium, hard
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [achievements, setAchievements] = useState(() => {
+    const saved = localStorage.getItem('flappy-achievements');
+    return saved ? JSON.parse(saved) : [];
+  });
   const gameStateRef = useRef('Start');
+  const isPausedRef = useRef(false);
   const animation_ids = useRef([]);
   const bird_dy_ref = useRef(0);
   const pipe_separation_ref = useRef(0);
   const moveSpeedRef = useRef(3);
+  const comboRef = useRef(0);
+  const comboMultiplierRef = useRef(1);
+  const activePowerUpRef = useRef(null);
+  const powerUpTimerRef = useRef(0);
   const isDefaultBird = !currentSkin; // true if no purchased skin is selected
   const birdImage = currentSkin?.image || birdImg;
   const birdFlapImage = currentSkin?.flapImage || birdImg2;
+  const birdFilter = currentSkin?.filter || '';
+  const birdStyle = birdFilter ? { filter: birdFilter } : undefined;
   const [backgroundClass, setBackgroundClass] = useState('bg-default');
   
   // Store these in refs to prevent useEffect re-runs
@@ -27,18 +45,269 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
   // Add a flag to prevent multiple token transfers
   const tokenTransferInProgress = useRef(false);
   
+  // Leaderboard state
+  const [leaderboard, setLeaderboard] = useState(() => {
+    const saved = localStorage.getItem('flappy-leaderboard');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  // Difficulty settings
+  const difficultySettings = {
+    easy: { baseSpeed: 2.5, pipeGap: 50, pipeSeparation: 120 },
+    medium: { baseSpeed: 3, pipeGap: 42, pipeSeparation: 100 },
+    hard: { baseSpeed: 4, pipeGap: 35, pipeSeparation: 85 }
+  };
+
+  // Achievement definitions
+  const achievementDefinitions = [
+    { id: 'first_score', name: 'First Flight', description: 'Score your first point', score: 1 },
+    { id: 'score_10', name: 'Getting Started', description: 'Reach 10 points', score: 10 },
+    { id: 'score_20', name: 'Flying High', description: 'Reach 20 points', score: 20 },
+    { id: 'score_30', name: 'Sky Master', description: 'Reach 30 points', score: 30 },
+    { id: 'score_50', name: 'Legendary', description: 'Reach 50 points', score: 50 },
+    { id: 'score_100', name: 'Unstoppable', description: 'Reach 100 points', score: 100 },
+    { id: 'combo_5', name: 'Combo King', description: 'Get a 5x combo', combo: 5 },
+    { id: 'combo_10', name: 'Combo Master', description: 'Get a 10x combo', combo: 10 }
+  ];
+
+  // Check and unlock achievements
+  const checkAchievements = useCallback((score, combo) => {
+    const newAchievements = [...achievements];
+    let unlocked = false;
+
+    achievementDefinitions.forEach(achievement => {
+      if (!newAchievements.includes(achievement.id)) {
+        if (achievement.score && score >= achievement.score) {
+          newAchievements.push(achievement.id);
+          unlocked = true;
+          showAchievementNotification(achievement);
+        } else if (achievement.combo && combo >= achievement.combo) {
+          newAchievements.push(achievement.id);
+          unlocked = true;
+          showAchievementNotification(achievement);
+        }
+      }
+    });
+
+    if (unlocked) {
+      setAchievements(newAchievements);
+      localStorage.setItem('flappy-achievements', JSON.stringify(newAchievements));
+    }
+  }, [achievements]);
+
+  // Show achievement notification
+  const showAchievementNotification = (achievement) => {
+    const notification = document.createElement('div');
+    notification.className = 'achievement-notification';
+    notification.innerHTML = `
+      <div class="achievement-icon">🏆</div>
+      <div class="achievement-text">
+        <div class="achievement-title">Achievement Unlocked!</div>
+        <div class="achievement-name">${achievement.name}</div>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100);
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 500);
+    }, 3000);
+  };
+
+  // Create particle effect
+  const createParticles = (x, y, color = '#f59e0b', count = 10) => {
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 6px;
+        height: 6px;
+        background: ${color};
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+      `;
+      document.body.appendChild(particle);
+
+      const angle = (Math.PI * 2 * i) / count;
+      const velocity = 2 + Math.random() * 2;
+      const vx = Math.cos(angle) * velocity;
+      const vy = Math.sin(angle) * velocity;
+
+      let px = x;
+      let py = y;
+      let opacity = 1;
+
+      const animate = () => {
+        px += vx;
+        py += vy;
+        opacity -= 0.02;
+
+        particle.style.left = px + 'px';
+        particle.style.top = py + 'px';
+        particle.style.opacity = opacity;
+
+        if (opacity > 0) {
+          requestAnimationFrame(animate);
+        } else {
+          particle.remove();
+        }
+      };
+
+      animate();
+    }
+  };
+
+  // Activate power-up
+  const activatePowerUp = useCallback((type) => {
+    setActivePowerUp(type);
+    activePowerUpRef.current = type;
+    setPowerUpTimer(10); // 10 seconds
+    powerUpTimerRef.current = 10;
+
+    // Visual effect for power-up activation
+    const bird = document.querySelector('.bird');
+    if (bird) {
+      const rect = bird.getBoundingClientRect();
+      createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, '#00ff00', 20);
+    }
+
+    // Clear power-up after duration
+    const timer = setInterval(() => {
+      powerUpTimerRef.current -= 1;
+      setPowerUpTimer(powerUpTimerRef.current);
+      
+      if (powerUpTimerRef.current <= 0) {
+        setActivePowerUp(null);
+        activePowerUpRef.current = null;
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Random power-up spawn
+  const spawnPowerUp = useCallback(() => {
+    if (Math.random() < 0.02 && !activePowerUpRef.current && gameStateRef.current === 'Play') {
+      const powerUps = ['shield', 'slowmo', 'double'];
+      const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+      
+      // Create power-up visual
+      const powerUpElement = document.createElement('div');
+      powerUpElement.className = 'power-up-item';
+      powerUpElement.setAttribute('data-type', randomPowerUp);
+      
+      const icons = { shield: '🛡️', slowmo: '⏱️', double: '2x' };
+      powerUpElement.textContent = icons[randomPowerUp];
+      
+      powerUpElement.style.cssText = `
+        position: fixed;
+        top: ${30 + Math.random() * 40}vh;
+        left: 100vw;
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 215, 0, 0.9);
+        border: 3px solid #ffd700;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        z-index: 8;
+        cursor: pointer;
+        animation: powerUpFloat 2s ease-in-out infinite;
+      `;
+      
+      document.querySelector('.pipes-container').appendChild(powerUpElement);
+
+      // Move power-up
+      const movePowerUp = () => {
+        if (gameStateRef.current !== 'Play' || isPausedRef.current) return;
+        
+        const rect = powerUpElement.getBoundingClientRect();
+        const bird = document.querySelector('.bird');
+        if (!bird) return;
+        
+        const birdRect = bird.getBoundingClientRect();
+        
+        // Check collision with bird
+        if (
+          rect.left < birdRect.right &&
+          rect.right > birdRect.left &&
+          rect.top < birdRect.bottom &&
+          rect.bottom > birdRect.top
+        ) {
+          activatePowerUp(randomPowerUp);
+          powerUpElement.remove();
+          return;
+        }
+
+        if (rect.right < 0) {
+          powerUpElement.remove();
+          return;
+        }
+
+        const settings = difficultySettings[difficulty];
+        powerUpElement.style.left = (rect.left - settings.baseSpeed * 1.2) + 'px';
+        requestAnimationFrame(movePowerUp);
+      };
+
+      movePowerUp();
+    }
+  }, [difficulty, activatePowerUp]);
+
+  // Pause/Resume game
+  const togglePause = useCallback(() => {
+    if (gameStateRef.current !== 'Play') return;
+    
+    setIsPaused(prev => {
+      const newPaused = !prev;
+      isPausedRef.current = newPaused;
+      
+      if (newPaused) {
+        // Cancel all animations
+        animation_ids.current.forEach(id => cancelAnimationFrame(id));
+      }
+      
+      return newPaused;
+    });
+  }, []);
+
+  // Update leaderboard
+  const updateLeaderboard = useCallback((score) => {
+    const newLeaderboard = [...leaderboard, { score, date: new Date().toISOString() }]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+    
+    setLeaderboard(newLeaderboard);
+    localStorage.setItem('flappy-leaderboard', JSON.stringify(newLeaderboard));
+  }, [leaderboard]);
+
   // Very High Token Conversion Rate
   const calculateTokensForScore = (score) => {
     // Much higher base tokens per pipe
-    let baseTokens = 5; // Increased from 1 to 5
+    let baseTokens = 5 * comboMultiplierRef.current; // Apply combo multiplier
+    
+    // Apply double points power-up
+    if (activePowerUpRef.current === 'double') {
+      baseTokens *= 2;
+    }
     
     // Very generous bonus tokens for milestones
-    if (score >= 50) return 50; // Massive bonus for high scores
-    if (score >= 30) return 25; // Big bonus for medium scores
-    if (score >= 20) return 15; // Good bonus for decent scores
-    if (score >= 10) return 10; // Nice bonus for early scores
+    if (score >= 50) return 50 * comboMultiplierRef.current;
+    if (score >= 30) return 25 * comboMultiplierRef.current;
+    if (score >= 20) return 15 * comboMultiplierRef.current;
+    if (score >= 10) return 10 * comboMultiplierRef.current;
     
-    return baseTokens; // Default 5 tokens per pipe
+    return baseTokens; // Default 5 tokens per pipe (with multiplier)
   };
   
   // Calculate total tokens earned for entire game session
@@ -78,6 +347,13 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
     if (setTotalGamesPlayed) {
       setTotalGamesPlayed(prev => prev + 1);
     }
+    
+    // Track games played today for daily challenges
+    const today = new Date();
+    const todayKey = `challenges-games-today-${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    const gamesToday = parseInt(localStorage.getItem(todayKey) || '0');
+    localStorage.setItem(todayKey, (gamesToday + 1).toString());
+    window.dispatchEvent(new CustomEvent('gameStarted', { detail: { gamesToday: gamesToday + 1 } }));
     
     // Update game state
     gameStateRef.current = 'Play';
@@ -287,6 +563,17 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
         setHighScore(score);
         localStorage.setItem("flappy-high-score", score);
       }
+      
+      // Track today's best score for daily challenges
+      const today = new Date();
+      const todayKey = `challenges-today-best-score-${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+      const todayBest = parseInt(localStorage.getItem(todayKey) || '0');
+      if (score > todayBest) {
+        localStorage.setItem(todayKey, score.toString());
+        // Trigger custom event for challenges component
+        window.dispatchEvent(new CustomEvent('gameScoreUpdate', { detail: { score } }));
+      }
+      
       if (scoreDisplay) scoreDisplay.style.display = 'none';
 
       scoreDisplay.style.display = 'none';
@@ -355,7 +642,7 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
     <div className='game-block'>
       <div className={`background ${backgroundClass}`}></div>
       <div className="pipes-container"></div>
-      <img src={birdImage} alt="bird-img" className="bird" id="bird-1" />
+      <img src={birdImage} alt="bird-img" className="bird" id="bird-1" style={birdStyle} />
 
       {gameState === 'Start' && (
         <StartScreen 

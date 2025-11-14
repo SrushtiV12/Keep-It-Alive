@@ -8,6 +8,7 @@ import Game from "./components/Game";
 import Profile from './components/Profile';
 import './index.css';
 import Store from './components/Store';
+import DailyChallenges from './components/DailyChallenges';
 
 export default function App() {
   const [state, setState] = useState({
@@ -378,6 +379,7 @@ export default function App() {
                 currentSkin={currentSkin}
                 setCurrentSkin={setCurrentSkin}
                 handlePurchase={handlePurchase}
+                highScore={highScore}
               />
             }
           />
@@ -395,6 +397,17 @@ export default function App() {
                 onVisitStore={handleVisitStore}
                 transferTokensToWallet={transferTokensToWallet}
                 updateWalletBalance={updateWalletBalance}
+              />
+            }
+          />
+          <Route
+            path="/challenges"
+            element={
+              <DailyChallenges
+                tokens={tokens}
+                setTokens={setTokens}
+                highScore={highScore}
+                totalGamesPlayed={totalGamesPlayed}
               />
             }
           />
