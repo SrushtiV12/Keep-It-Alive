@@ -614,15 +614,20 @@ export default function Game({ highScore, setHighScore, tokens, setTokens, incre
     };
   }, [gameState, setHighScore, setTokens, highScore]); // Added highScore back as it's needed
 
-
-// Track today's best score for daily challenges
-    const today = new Date();
-    const todayKey = `challenges-today-best-score-${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-    const todayBest = parseInt(localStorage.getItem(todayKey) || '0');     if (score > todayBest) {
-       localStorage.setItem(todayKey, score.toString());
-      // Trigger custom event for challenges component
-       window.dispatchEvent(new CustomEvent('gameScoreUpdate', { detail: { score } }));
-           }
+  // Track today's best score for daily challenges
+  useEffect(() => {
+    if (currentScore > 0) {
+      const today = new Date();
+      const todayKey = `challenges-today-best-score-${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+      const todayBest = parseInt(localStorage.getItem(todayKey) || '0');
+      
+      if (currentScore > todayBest) {
+        localStorage.setItem(todayKey, currentScore.toString());
+        // Trigger custom event for challenges component
+        window.dispatchEvent(new CustomEvent('gameScoreUpdate', { detail: { score: currentScore } }));
+      }
+    }
+  }, [currentScore]);
 
 
 
