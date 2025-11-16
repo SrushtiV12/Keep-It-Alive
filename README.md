@@ -9,6 +9,7 @@
 - 🕹️ Classic Flappy Bird mechanics: Tap to fly and avoid pipes!
 - 💯 Score tracking system with a live leaderboard.
 - 🔄 Real-time game state and smooth animations.
+-     Daily Challenges for the players.
 
 ---
 
