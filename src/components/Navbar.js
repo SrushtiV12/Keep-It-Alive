@@ -95,13 +95,7 @@ const Navbar = ({ connectWallet, account, state, isConnecting, connectionError, 
               Challenges
             </Link>
           </div>
-          <Link 
-              to="/challenges" 
-              className={location.pathname === "/challenges" ? "active" : ""}
-              onClick={() => setIsOpen(false)}
-            >
-              Challenges
-            </Link>
+          
           <div className="nav-right">
             {account ? (
               <div className="wallet-connected">

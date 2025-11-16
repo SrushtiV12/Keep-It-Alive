@@ -125,6 +125,7 @@ export default function Profile({
                   src={currentSkinData.image} 
                   alt={currentSkinData.name}
                   className="w-12 h-12 object-contain"
+                    style={currentSkinData.filter ? { filter: currentSkinData.filter } : undefined}
                 />
               </div>
               <div>

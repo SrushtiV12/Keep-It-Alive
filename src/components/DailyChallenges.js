@@ -202,6 +202,14 @@ const DailyChallenges = ({ tokens, setTokens, highScore, totalGamesPlayed }) => 
     
     return () => window.removeEventListener('gameStarted', handleGameStarted);
   }, [setTokens]);
+   
+   useEffect(() => {
+    if (challenges.length > 0 && challenges.every(challenge => challenge.completed)) {
+      const today = getTodayDate();
+      localStorage.setItem('daily-challenges-last-completed', today);
+      window.dispatchEvent(new CustomEvent('dailyChallengesCompleted', { detail: { date: today } }));
+    }
+  }, [challenges]);
 
   const showCompletionNotification = (challenge) => {
     const notification = document.createElement('div');
